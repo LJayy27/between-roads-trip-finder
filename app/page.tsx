@@ -2,39 +2,29 @@
 
 import { useState } from "react";
 
-type TripResult = {
-  tripVibe: string;
-  recommendedRouteType: string;
-  summary: string;
-  packingPriorities: string[];
-  beginnerTips: string[];
-  dogFriendlyNotes: string[];
-  vanComfortTips: string[];
-  addOnsToConsider: string[];
-  confidenceChecklist: string[];
+type RouteIdea = {
+  routeName: string;
+  routeType: string;
+  suggestedLoop: string[];
+  bestFor: string;
+  routeRhythm: string;
+  highlights: string[];
+  watchOuts: string[];
+  verifyBeforeYouGo: string[];
+};
+
+type RouteResult = {
+  routeSetTitle: string;
+  overallFit: string;
+  routes: RouteIdea[];
+  nextStep: string;
 };
 
 export default function Home() {
-  const [formData, setFormData] = useState({
-    startingLocation: "",
-    numberOfDays: "",
-    season: "",
-    travelStyle: "",
-    dogComing: "No",
-    comfortLevel: "",
-    mainConcern: "",
-  });
-
-  const [result, setResult] = useState<TripResult | null>(null);
+  const [tripDescription, setTripDescription] = useState("");
+  const [result, setResult] = useState<RouteResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
-  function updateField(field: string, value: string) {
-    setFormData((current) => ({
-      ...current,
-      [field]: value,
-    }));
-  }
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -49,7 +39,9 @@ export default function Home() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          tripDescription,
+        }),
       });
 
       const data = await response.json();
@@ -63,7 +55,7 @@ export default function Home() {
       setError(
         err instanceof Error
           ? err.message
-          : "Something went wrong while generating your trip fit."
+          : "Something went wrong while generating your route ideas."
       );
     } finally {
       setLoading(false);
@@ -78,13 +70,19 @@ export default function Home() {
         </p>
 
         <h1 className="mb-4 text-5xl font-semibold tracking-tight">
-          Trip Fit Finder
+          Starter Route Finder
         </h1>
 
         <p className="mb-10 max-w-2xl text-lg leading-8 text-stone-600">
-          Answer a few quick questions and get beginner-friendly van trip
-          guidance for your route, packing priorities, comfort needs, and
-          confidence level.
+          Describe the kind of van trip you&apos;re imagining, and we&apos;ll
+          suggest a few beginner-friendly route ideas with real places to
+          explore.
+        </p>
+
+        <p className="mb-10 max-w-3xl rounded-2xl border border-stone-200 bg-white p-4 text-sm leading-6 text-stone-600 shadow-sm">
+          These are starting points, not final itineraries - always check
+          current weather, road conditions, campground rules, pet policies,
+          fire restrictions, reservations, and local regulations before you go.
         </p>
 
         <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr]">
@@ -94,123 +92,21 @@ export default function Home() {
           >
             <div className="mb-5">
               <label className="mb-2 block text-sm font-medium">
-                Starting location
-              </label>
-              <input
-                className="w-full rounded-xl border border-stone-300 px-4 py-3"
-                placeholder="Denver, CO"
-                maxLength={80}
-                value={formData.startingLocation}
-                onChange={(event) =>
-                  updateField("startingLocation", event.target.value)
-                }
-              />
-            </div>
-
-            <div className="mb-5">
-              <label className="mb-2 block text-sm font-medium">
-                Number of days
-              </label>
-              <input
-                className="w-full rounded-xl border border-stone-300 px-4 py-3"
-                placeholder="3"
-                maxLength={20}
-                value={formData.numberOfDays}
-                onChange={(event) =>
-                  updateField("numberOfDays", event.target.value)
-                }
-              />
-            </div>
-
-            <div className="mb-5">
-              <label className="mb-2 block text-sm font-medium">
-                Season or month
-              </label>
-              <input
-                className="w-full rounded-xl border border-stone-300 px-4 py-3"
-                placeholder="June, fall, winter, etc."
-                maxLength={60}
-                value={formData.season}
-                onChange={(event) => updateField("season", event.target.value)}
-              />
-            </div>
-
-            <div className="mb-5">
-              <label className="mb-2 block text-sm font-medium">
-                Travel style
-              </label>
-              <select
-                className="w-full rounded-xl border border-stone-300 px-4 py-3"
-                value={formData.travelStyle}
-                onChange={(event) =>
-                  updateField("travelStyle", event.target.value)
-                }
-              >
-                <option value="">Choose one</option>
-                <option value="Slow and scenic">Slow and scenic</option>
-                <option value="Desert adventure">Desert adventure</option>
-                <option value="Mountain reset">Mountain reset</option>
-                <option value="Hot springs and relaxation">
-                  Hot springs and relaxation
-                </option>
-                <option value="Beginner-friendly weekend">
-                  Beginner-friendly weekend
-                </option>
-              </select>
-            </div>
-
-            <div className="mb-5">
-              <label className="mb-2 block text-sm font-medium">
-                Is a dog coming?
-              </label>
-              <select
-                className="w-full rounded-xl border border-stone-300 px-4 py-3"
-                value={formData.dogComing}
-                onChange={(event) =>
-                  updateField("dogComing", event.target.value)
-                }
-              >
-                <option value="No">No</option>
-                <option value="Yes">Yes</option>
-              </select>
-            </div>
-
-            <div className="mb-5">
-              <label className="mb-2 block text-sm font-medium">
-                Comfort level with van travel
-              </label>
-              <select
-                className="w-full rounded-xl border border-stone-300 px-4 py-3"
-                value={formData.comfortLevel}
-                onChange={(event) =>
-                  updateField("comfortLevel", event.target.value)
-                }
-              >
-                <option value="">Choose one</option>
-                <option value="First time">First time</option>
-                <option value="Some camping experience">
-                  Some camping experience
-                </option>
-                <option value="Comfortable with road trips">
-                  Comfortable with road trips
-                </option>
-                <option value="Experienced camper">Experienced camper</option>
-              </select>
-            </div>
-
-            <div className="mb-5">
-              <label className="mb-2 block text-sm font-medium">
-                Main concern
+                What kind of trip are you imagining?
               </label>
               <textarea
-                className="min-h-28 w-full rounded-xl border border-stone-300 px-4 py-3"
-                placeholder="Packing, driving, sleeping, finding campsites, using the van systems..."
-                maxLength={500}
-                value={formData.mainConcern}
-                onChange={(event) =>
-                  updateField("mainConcern", event.target.value)
-                }
+                required
+                className="min-h-56 w-full rounded-xl border border-stone-300 px-4 py-3"
+                placeholder="I’m starting in Denver and want a 3-day mountain loop in June with hot springs, small towns, easy hikes, and dog-friendly stops. I’m newer to van travel and don’t want to drive too much each day."
+                maxLength={1000}
+                value={tripDescription}
+                onChange={(event) => setTripDescription(event.target.value)}
               />
+              <p className="mt-2 text-sm leading-6 text-stone-500">
+                Include anything that matters: starting point, trip length,
+                season, route vibe, pets, comfort level, places you&apos;re
+                curious about, or anything you want to avoid.
+              </p>
             </div>
 
             <button
@@ -218,7 +114,7 @@ export default function Home() {
               disabled={loading}
               className="w-full rounded-xl bg-stone-900 px-5 py-3 font-medium text-white disabled:opacity-60"
             >
-              {loading ? "Creating your trip fit..." : "Generate trip fit"}
+              {loading ? "Looking for route ideas that match your trip style..." : "Suggest route ideas"}
             </button>
 
             {error && (
@@ -231,14 +127,13 @@ export default function Home() {
           <section className="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm">
             {!result && !loading && (
               <div className="flex h-full min-h-96 items-center justify-center rounded-2xl bg-stone-100 p-8 text-center text-stone-500">
-                Your personalized trip guidance will appear here.
+                Your starter route ideas will appear here.
               </div>
             )}
 
             {loading && (
               <div className="flex h-full min-h-96 items-center justify-center rounded-2xl bg-stone-100 p-8 text-center text-stone-500">
-                Thinking through your route style, comfort needs, and packing
-                priorities...
+                Looking for route ideas that match your trip style...
               </div>
             )}
 
@@ -246,58 +141,63 @@ export default function Home() {
               <div className="space-y-5">
                 <div>
                   <p className="text-sm uppercase tracking-[0.18em] text-stone-500">
-                    Your trip vibe
+                    Starter route ideas
                   </p>
                   <h2 className="mt-2 text-3xl font-semibold">
-                    {result.tripVibe}
+                    {result.routeSetTitle}
                   </h2>
                 </div>
 
-                <ResultBlock
-                  title="Recommended route type"
-                  content={result.recommendedRouteType}
-                />
+                <ResultBlock title="Overall fit" content={result.overallFit} />
 
-                <ResultBlock title="Summary" content={result.summary} />
+                <div className="space-y-4">
+                  {result.routes?.map((route, index) => (
+                    <RouteCard key={`${route.routeName}-${index}`} route={route} />
+                  ))}
+                </div>
 
-                <ResultList
-                  title="Packing priorities"
-                  items={result.packingPriorities}
-                />
-
-                <ResultList title="Beginner tips" items={result.beginnerTips} />
-
-                <ResultList
-                  title="Dog-friendly notes"
-                  items={result.dogFriendlyNotes}
-                />
-
-                <ResultList
-                  title="Van comfort tips"
-                  items={result.vanComfortTips}
-                />
-
-                <ResultList
-                  title="Add-ons to consider"
-                  items={result.addOnsToConsider}
-                />
-
-                <ResultList
-                  title="Confidence checklist"
-                  items={result.confidenceChecklist}
-                />
+                <ResultBlock title="Suggested next step" content={result.nextStep} />
 
                 <p className="rounded-2xl border border-stone-200 bg-white p-4 text-xs leading-5 text-stone-500">
-  This is a starter recommendation, not a final itinerary. Before traveling,
-  check current weather, road conditions, campground rules, pet policies,
-  permits, fire restrictions, and local regulations.
-</p>
+                  These are starter route ideas, not final itineraries. Before
+                  traveling, check current weather, road conditions,
+                  campground rules, pet policies, reservations, fire
+                  restrictions, and local regulations.
+                </p>
               </div>
             )}
           </section>
         </div>
       </section>
     </main>
+  );
+}
+
+function RouteCard({ route }: { route: RouteIdea }) {
+  return (
+    <div className="rounded-2xl bg-stone-100 p-5">
+      <div className="mb-4">
+        <h3 className="text-xl font-semibold">{route.routeName}</h3>
+        <p className="mt-1 text-sm uppercase tracking-[0.16em] text-stone-500">
+          {route.routeType}
+        </p>
+      </div>
+
+      <div className="space-y-4">
+        <ResultBlock
+          title="Suggested loop"
+          content={route.suggestedLoop?.join(" → ")}
+        />
+        <ResultBlock title="Best for" content={route.bestFor} />
+        <ResultBlock title="Route rhythm" content={route.routeRhythm} />
+        <ResultList title="Highlights" items={route.highlights} />
+        <ResultList title="Watch-outs" items={route.watchOuts} />
+        <ResultList
+          title="Verify before you go"
+          items={route.verifyBeforeYouGo}
+        />
+      </div>
+    </div>
   );
 }
 
